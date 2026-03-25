@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CoffeeCafe Admin</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
+        .order-card { background: white; padding: 15px; margin-bottom: 10px; border-radius: 8px; border-left: 5px solid #e67e22; }
+        #loginSection { max-width: 300px; margin: 100px auto; background: white; padding: 20px; border-radius: 8px; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <div id="loginSection">
+        <h2>Admin Login</h2>
+        <input type="text" id="user" placeholder="Username"><br><br>
+        <input type="password" id="pass" placeholder="Password"><br><br>
+        <button onclick="login()">Login</button>
+    </div>
+
+    <div id="adminDashboard" class="hidden">
+        <h2>Live Orders Dashboard</h2>
+        <div id="ordersList">No orders yet...</div>
+    </div>
+
+    <script>
+        async function login() {
+            const res = await fetch('http://localhost:3000/admin/login', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({username: user.value, password: pass.value})
+            });
+            const data = await res.json();
+            if(data.success) {
+                document.getElementById('loginSection').classList.add('hidden');
+                document.getElementById('adminDashboard').classList.remove('hidden');
+                startOrderPolling(); // Start checking for orders
+            } else {
+                alert("Wrong login!");
+            }
+        }
+
+        // Check for new orders every 5 seconds
+        function startOrderPolling() {
+            setInterval(async () => {
+                const res = await fetch('http://localhost:3000/admin/orders');
+                const orders = await res.json();
+                renderOrders(orders);
+            }, 5000);
+        }
+
+       function renderOrders(orders) {
+    const container = document.getElementById('ordersList');
+    container.innerHTML = orders.reverse().map(o => `
+        <div class="order-card" style="border-left-color: ${o.status === 'Ready' ? '#2ecc71' : '#e67e22'}">
+            <strong>Order from: ${o.name}</strong> (${o.time})<br>
+            Items: ${o.items.map(i => i.name + ' x' + i.quantity).join(', ')}<br>
+            <strong>Current Status: ${o.status}</strong><br><br>
+            
+            <select onchange="updateStatus(${o.id}, this.value)">
+                <option value="Pending" ${o.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                <option value="On the Way" ${o.status === 'On the Way' ? 'selected' : ''}>On the Way</option>
+                <option value="Ready to Pick Up" ${o.status === 'Ready to Pick Up' ? 'selected' : ''}>Ready to Pick Up</option>
+            </select>
+        </div>
+    `).join('');
+}
+
+async function updateStatus(orderId, newStatus) {
+    await fetch(`http://localhost:3000/admin/orders/${orderId}`, {
+        method: 'PATCH',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ status: newStatus })
+    });
+    alert("Status Updated!");
+}
+    </script>
+</body>
+</html>
