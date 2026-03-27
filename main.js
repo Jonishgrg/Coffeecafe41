@@ -9,7 +9,7 @@ const API_URL = 'https://coffee-backend-9koq.onrender.com';
                 price: 280,
                 category: "cold",
                 description: "Creamy blend of fresh blueberries, yogurt, and a touch of honey.",
-                image: "assets/smoothie.jpg",
+                image: "smoothie.jpg",
             },
             {
                 id: 2,
@@ -17,7 +17,7 @@ const API_URL = 'https://coffee-backend-9koq.onrender.com';
                 price: 210,
                 category: "cold",
                 description: "Chilled espresso with milk over ice, lightly sweetened for a refreshing boost.",
-                image: "assets/icelatte.jpg",
+                image: "icelatte.jpg",
             },
             {
                 id: 3,
@@ -25,7 +25,7 @@ const API_URL = 'https://coffee-backend-9koq.onrender.com';
                 price: 140,
                 category: "cold",
                 description: "Freshly squeezed lemons with mint leaves, ice-cold and revitalizing.",
-                image: "assets/mint.jpg",
+                image: "mint.jpg",
             },
             {
                 id: 4,
@@ -33,7 +33,7 @@ const API_URL = 'https://coffee-backend-9koq.onrender.com';
                 price: 200,
                 category: "cold",
                 description: "Rich chocolate milkshake blended with Oreo cookies for ultimate indulgence.",
-                image: "assets/oreo.jpg",
+                image: "oreo.jpg",
             },
             {
                 id: 5,
@@ -41,7 +41,7 @@ const API_URL = 'https://coffee-backend-9koq.onrender.com';
                 price: 100,
                 category: "hot",
                 description: "Pure, bold espresso served hot for a classic caffeine kick.",
-                image: "assets/black.jpg",
+                image: "black.jpg",
             },
             {
                 id: 6,
@@ -49,7 +49,7 @@ const API_URL = 'https://coffee-backend-9koq.onrender.com';
                 price: 165,
                 category: "hot",
                 description: "Intense, smooth shot of espresso to awaken your senses.",
-                image: "assets/espresso.jpg",
+                image: "espresso.jpg",
             },
             {
                 id: 7,
@@ -57,7 +57,7 @@ const API_URL = 'https://coffee-backend-9koq.onrender.com';
                 price: 220,
                 category: "hot",
                 description: "Velvety chocolate with steamed milk, topped with a hint of cocoa.",
-                image: "assets/hotchocolate.jpg",
+                image: "hotchocolate.jpg",
             },
             {
                 id: 8,
@@ -65,7 +65,7 @@ const API_URL = 'https://coffee-backend-9koq.onrender.com';
                 price: 75,
                 category: "hot",
                 description: "Classic brewed tea, served hot or iced, perfect anytime.",
-                image: "assets/tea.jpg",
+                image: "tea.jpg",
             },
             {
                 id: 9,
@@ -73,7 +73,7 @@ const API_URL = 'https://coffee-backend-9koq.onrender.com';
                 price: 190,
                 category: "hot",
                 description: "Espresso with steamed milk and a thick layer of frothy foam.",
-                image: "assets/cap.jpg",
+                image: "cap.jpg",
             },
             {
                 id: 10,
@@ -81,7 +81,7 @@ const API_URL = 'https://coffee-backend-9koq.onrender.com';
                 price: 130,
                 category: "pastries",
                 description: "Sweet, layered pastry filled with fruit or custard for a delightful treat.",
-                image: "assets/danish.jpg",
+                image: "danish.jpg",
             },
             {
                 id: 11,
@@ -89,7 +89,7 @@ const API_URL = 'https://coffee-backend-9koq.onrender.com';
                 price: 230,
                 category: "pastries",
                 description: "Rich and moist hazelnut cake with a smooth chocolate glaze and crunchy hazelnut topping.",
-                image: "assets/hazlenut.jpg",
+                image: "hazlenut.jpg",
             },
              {
                 id: 12,
@@ -97,7 +97,7 @@ const API_URL = 'https://coffee-backend-9koq.onrender.com';
                 price: 200,
                 category: "pastries",
                 description: "Moist, rich cake with a velvety texture and cream cheese frosting.",
-                image: "assets/red.jpg",
+                image: "red.jpg",
             },
              {
                 id: 13,
@@ -105,7 +105,7 @@ const API_URL = 'https://coffee-backend-9koq.onrender.com';
                 price: 180,
                 category: "pastries",
                 description: "Flaky, buttery, and golden-brown pastry perfect for breakfast or a light snack.",
-                image: "assets/croissant.jpg",
+                image: "croissant.jpg",
             },
              {
                 id: 14,
@@ -113,7 +113,7 @@ const API_URL = 'https://coffee-backend-9koq.onrender.com';
                 price: 350,
                 category: "snacks",
                 description: "Juicy chicken patty with melted cheese, fresh lettuce, tomato, and our signature sauce.",
-                image: "assets/burger.jpg",
+                image: "burger.jpg",
             },
              {
                 id: 15,
@@ -121,7 +121,7 @@ const API_URL = 'https://coffee-backend-9koq.onrender.com';
                 price: 300,
                 category: "snacks",
                 description: "Grilled vegetable patty with fresh greens, tomato, and creamy mayo on a soft bun.",
-                image: "assets/veg.jpg",
+                image: "veg.jpg",
             },
              {
                 id: 16,
@@ -129,7 +129,7 @@ const API_URL = 'https://coffee-backend-9koq.onrender.com';
                 price: 420,
                 category: "snacks",
                 description: "Classic pizza with fresh tomato sauce, mozzarella cheese, and fragrant basil leaves.",
-                image: "assets/mrgherita.jpg",
+                image: "mrgherita.jpg",
             },
              {
                 id: 17,
@@ -137,7 +137,7 @@ const API_URL = 'https://coffee-backend-9koq.onrender.com';
                 price: 500,
                 category: "snacks",
                 description: "Loaded with spicy pepperoni slices, melted mozzarella, and zesty tomato sauce.",
-                image: "assets/pepperoni.jpg",
+                image: "pepperoni.jpg",
             },
              {
                 id: 18,
@@ -145,7 +145,7 @@ const API_URL = 'https://coffee-backend-9koq.onrender.com';
                 price: 180,
                 category: "snacks",
                 description: "Steamed dumplings filled with seasoned chicken and herbs, served with spicy dipping sauce.",
-                image: "assets/chikenmomo.jpg",
+                image: "chikenmomo.jpg",
              },
              {
                 id: 19,
@@ -153,7 +153,7 @@ const API_URL = 'https://coffee-backend-9koq.onrender.com';
                 price: 120,
                 category: "snacks",
                 description: "Steamed dumplings packed with fresh vegetables and aromatic spices, served with chili sauce.",
-                image: "assets/vegmomo.avif",
+                image: "vegmomo.avif",
              },
              {
                 id: 20,
@@ -161,7 +161,7 @@ const API_URL = 'https://coffee-backend-9koq.onrender.com';
                 price: 200,
                 category: "snacks",
                 description: "Crispy golden fries served with your choice of ketchup or cheesy dip.",
-                image: "assets/fries.jpg",
+                image: "fries.jpg",
             },
         ];
 
@@ -358,13 +358,118 @@ placeOrderBtn.addEventListener('click', async () => {
     }
 });
 
+// Reservation System
 const reservationForm = document.getElementById("reservationForm");
+const availabilityStatus = document.getElementById("availabilityStatus");
+const resDate = document.getElementById("resDate");
+const resTime = document.getElementById("resTime");
+const resTable = document.getElementById("resTable");
+
 if (reservationForm) {
-    reservationForm.addEventListener("submit", (e) => {
-        e.preventDefault();
-        document.getElementById("reservationMessage").textContent = `Reserved for ${document.getElementById("resName").value}!`;
-        reservationForm.reset();
+    // Check availability when date/time changes
+    [resDate, resTime].forEach(element => {
+        element.addEventListener("change", checkTableAvailability);
     });
+
+    reservationForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const formData = {
+            tableNumber: document.getElementById("resTable").value,
+            customer: {
+                name: document.getElementById("resName").value,
+                email: document.getElementById("resEmail").value,
+                phone: document.getElementById("resPhone").value
+            },
+            guests: document.getElementById("resGuests").value,
+            date: document.getElementById("resDate").value,
+            time: document.getElementById("resTime").value,
+            notes: document.getElementById("resNotes").value
+        };
+
+        try {
+            const response = await fetch(`${API_URL}/api/reservations`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                document.getElementById("reservationMessage").textContent =
+                    `✅ Reservation confirmed for ${formData.customer.name} at Table ${formData.tableNumber} on ${formData.date} at ${formData.time}`;
+                document.getElementById("reservationMessage").style.color = "green";
+                reservationForm.reset();
+                availabilityStatus.style.display = "none";
+            } else {
+                document.getElementById("reservationMessage").textContent = `❌ ${result.message}`;
+                document.getElementById("reservationMessage").style.color = "red";
+            }
+        } catch (error) {
+            document.getElementById("reservationMessage").textContent = "❌ Error making reservation. Please try again.";
+            document.getElementById("reservationMessage").style.color = "red";
+            console.error('Reservation error:', error);
+        }
+    });
+}
+
+async function checkTableAvailability() {
+    const date = resDate.value;
+    const time = resTime.value;
+
+    if (!date || !time) return;
+
+    try {
+        const response = await fetch(`${API_URL}/api/tables/availability?date=${date}&time=${time}`);
+        const data = await response.json();
+
+        if (response.ok) {
+            updateTableOptions(data.availableTables, data.reservedTables);
+            showAvailabilityStatus(data);
+        }
+    } catch (error) {
+        console.error('Error checking availability:', error);
+    }
+}
+
+function updateTableOptions(availableTables, reservedTables) {
+    const options = resTable.querySelectorAll('option');
+    options.forEach(option => {
+        if (option.value) {
+            const tableNum = parseInt(option.value);
+            if (reservedTables.includes(tableNum)) {
+                option.disabled = true;
+                option.textContent = `Table ${tableNum} (Reserved)`;
+                option.style.color = "#999";
+            } else {
+                option.disabled = false;
+                option.textContent = `Table ${tableNum}`;
+                option.style.color = "";
+            }
+        }
+    });
+}
+
+function showAvailabilityStatus(data) {
+    availabilityStatus.style.display = "block";
+
+    if (data.availableTables.length === 0) {
+        availabilityStatus.innerHTML = `
+            <div style="color: #d32f2f; background: #ffebee; padding: 10px; border-radius: 5px;">
+                <strong>❌ No tables available</strong> for ${data.date} at ${data.time}
+            </div>
+        `;
+    } else {
+        availabilityStatus.innerHTML = `
+            <div style="color: #2e7d32; background: #e8f5e8; padding: 10px; border-radius: 5px;">
+                <strong>✅ ${data.availableTables.length} tables available</strong> for ${data.date} at ${data.time}<br>
+                <small>Available tables: ${data.availableTables.join(', ')}</small>
+            </div>
+        `;
+    }
 }
 
 cartIcon.addEventListener('click', () => cart.length ? cartModal.style.display = 'block' : alert("Cart is empty!"));
@@ -429,6 +534,17 @@ mobileNavToggle.addEventListener('click', () => {
 
 
 window.addEventListener('click', (e) => e.target === cartModal && (cartModal.style.display = 'none'));
+
+// Table Number Display
+if (tableNumber) {
+    const tableDisplay = document.getElementById('tableDisplay');
+    const tableNumberText = document.getElementById('tableNumberText');
+
+    if (tableDisplay && tableNumberText) {
+        tableDisplay.style.display = 'block';
+        tableNumberText.textContent = `You are ordering for Table ${tableNumber}`;
+    }
+}
 
 initializeMenu();
 

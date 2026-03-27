@@ -224,7 +224,7 @@ header {
 
 /* Hero Section */
 .hero {
-    background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('assets/nice.jpg');
+    background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('nice.jpg');
     background-size: cover;
     background-position: center;
     color: white;
@@ -449,7 +449,7 @@ header {
 .about-image {
     flex: 1;
     height: 400px;
-    background: url('assets/coffeebeans.jpg');
+    background: url('coffeebeans.jpg');
     background-size: cover;
     background-position: center;
     border-radius: 10px;
