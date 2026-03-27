@@ -21,7 +21,7 @@ mongoose.connect(process.env.MONGO_URI)
 .catch(err => console.log(err));
 
 // ===== Model =====
-const Order = require("./models/Order");
+const Order = require("./models/order");
 
 // ===== Environment Variables =====
 const JWT_SECRET = process.env.JWT_SECRET || "change-this-in-production";
@@ -302,7 +302,7 @@ app.patch("/api/orders/:id", auth, async (req, res) => {
 // ===== RESERVATION ENDPOINTS =====
 
 // Import Reservation model
-const Reservation = require("./models/Reservation");
+const Reservation = require("./models/reservation");
 
 // Rate limiter for reservations
 const reservationLimiter = rateLimit({
