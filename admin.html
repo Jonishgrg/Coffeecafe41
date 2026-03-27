@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Panel</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .order-card { border: 1px solid #ccc; padding: 12px; margin-bottom: 10px; border-radius: 6px; }
+    .order-actions { margin-top: 8px; }
+    input, button { margin: 4px 0; }
+  </style>
+</head>
+<body>
+
+<h2>Admin Login</h2>
+<div id="loginSection">
+  <input id="user" placeholder="username">
+  <input id="pass" placeholder="password" type="password">
+  <button id="loginBtn">Login</button>
+  <p id="loginMessage" style="color:red"></p>
+</div>
+
+<div id="adminSection" style="display:none;">
+  <div style="background: #f0f0f0; padding: 10px; margin-bottom: 10px; border-radius: 4px;">
+    <p>Logged in as: <strong id="adminUsername"></strong></p>
+    <button id="logoutBtn" style="background: #d32f2f; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer;">Logout</button>
+  </div>
+
+  <hr>
+
+  <h1>Orders</h1>
+  <button id="refreshBtn">Refresh Orders</button>
+  <div id="orders"></div>
+</div>
+
+<script>
+const API_URL = 'https://coffee-backend-9koq.onrender.com';
+let accessToken = '';
+let refreshToken = '';
+
+const loginBtn = document.getElementById('loginBtn');
+const logoutBtn = document.getElementById('logoutBtn');
+const refreshBtn = document.getElementById('refreshBtn');
+const loginSection = document.getElementById('loginSection');
+const adminSection = document.getElementById('adminSection');
+const loginMessage = document.getElementById('loginMessage');
+
+loginBtn.addEventListener('click', login);
+logoutBtn.addEventListener('click', logout);
+refreshBtn.addEventListener('click', loadOrders);
+
+// Check if already logged in (tokens in localStorage)
+window.addEventListener('load', () => {
+  const savedAccessToken = localStorage.getItem('accessToken');
+  const savedRefreshToken = localStorage.getItem('refreshToken');
+  const savedUsername = localStorage.getItem('adminUsername');
+  
+  if (savedAccessToken && savedRefreshToken) {
+    accessToken = savedAccessToken;
+    refreshToken = savedRefreshToken;
+    showAdminPanel(savedUsername);
+  }
+});
+
+async function login() {
+  const username = document.getElementById('user').value;
+  const password = document.getElementById('pass').value;
+
+  if (!username || !password) {
+    loginMessage.textContent = 'Please enter username and password';
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_URL}/api/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+
+    if (!res.ok) {
+      const error = await res.json();
+      loginMessage.textContent = error.message || 'Invalid credentials';
+      return;
+    }
+
+    const data = await res.json();
+    accessToken = data.accessToken;
+    refreshToken = data.refreshToken;
+
+    // Save to localStorage for session persistence
+    localStorage.setItem('accessToken', accessToken);
+    localStorage.setItem('refreshToken', refreshToken);
+    localStorage.setItem('adminUsername', username);
+
+    showAdminPanel(username);
+    loadOrders();
+  } catch (err) {
+    loginMessage.textContent = 'Login error: ' + err.message;
+    console.error(err);
+  }
+}
+
+function showAdminPanel(username) {
+  loginSection.style.display = 'none';
+  adminSection.style.display = 'block';
+  document.getElementById('adminUsername').textContent = username;
+}
+
+async function logout() {
+  try {
+    // Notify server to blacklist token
+    await fetch(`${API_URL}/api/logout`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${accessToken}` }
+    });
+  } catch (err) {
+    console.error('Logout error:', err);
+  }
+
+  // Clear tokens
+  accessToken = '';
+  refreshToken = '';
+  localStorage.removeItem('accessToken');
+  localStorage.removeItem('refreshToken');
+  localStorage.removeItem('adminUsername');
+
+  // Reset UI
+  loginSection.style.display = 'block';
+  adminSection.style.display = 'none';
+  document.getElementById('user').value = '';
+  document.getElementById('pass').value = '';
+  loginMessage.textContent = 'Logged out successfully';
+}
+
+async function loadOrders() {
+  if (!accessToken) {
+    loginMessage.textContent = 'Please login first.';
+    showLoginPanel();
+    return;
+  }
+
+  try {
+    let res = await fetch(`${API_URL}/api/orders`, {
+      headers: { 'Authorization': `Bearer ${accessToken}` }
+    });
+
+    // Handle token expiration
+    if (res.status === 403) {
+      const refreshed = await refreshAccessToken();
+      if (!refreshed) {
+        logout();
+        return;
+      }
+      // Retry with new token
+      res = await fetch(`${API_URL}/api/orders`, {
+        headers: { 'Authorization': `Bearer ${accessToken}` }
+      });
+    }
+
+    if (!res.ok) {
+      loginMessage.textContent = 'Failed to fetch orders.';
+      return;
+    }
+
+    const orders = await res.json();
+    const container = document.getElementById('orders');
+    container.innerHTML = '';
+
+    if (orders.length === 0) {
+      container.innerHTML = '<p>No orders yet</p>';
+      return;
+    }
+
+    orders.forEach(order => {
+      const div = document.createElement('div');
+      div.className = 'order-card';
+
+      const total = order.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      
+      div.innerHTML = `
+        <b>Order ID:</b> ${order._id}<br>
+        <b>Table:</b> ${order.tableNumber || 'No table'}<br>
+        <b>Name:</b> ${order.customer.name || 'Guest'}<br>
+        <b>Contact:</b> ${order.customer.email || order.customer.phone || 'N/A'}<br>
+        <b>Status:</b> ${order.status}<br>
+        <b>Payment:</b> ${order.paymentMethod}<br>
+        <b>Total:</b> Rs ${total.toFixed(2)}<br>
+        <b>Created:</b> ${new Date(order.createdAt).toLocaleString()}<br>
+        <div class="order-actions">
+          <label>Update table: <input type="number" value="${order.tableNumber || ''}" data-order-id="${order._id}" class="table-input"></label>
+          <select data-order-id="${order._id}" class="status-select">
+            <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>pending</option>
+            <option value="preparing" ${order.status === 'preparing' ? 'selected' : ''}>preparing</option>
+            <option value="ready" ${order.status === 'ready' ? 'selected' : ''}>ready</option>
+            <option value="completed" ${order.status === 'completed' ? 'selected' : ''}>completed</option>
+            <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>cancelled</option>
+          </select>
+          <button onclick="updateOrder('${order._id}')">Save</button>
+        </div>
+      `;
+
+      container.appendChild(div);
+    });
+    loginMessage.textContent = '';
+  } catch (err) {
+    loginMessage.textContent = 'Error loading orders: ' + err.message;
+    console.error(err);
+  }
+}
+
+async function refreshAccessToken() {
+  if (!refreshToken) return false;
+
+  try {
+    const res = await fetch(`${API_URL}/api/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken })
+    });
+
+    if (!res.ok) {
+      return false;
+    }
+
+    const data = await res.json();
+    accessToken = data.accessToken;
+    localStorage.setItem('accessToken', accessToken);
+    return true;
+  } catch (err) {
+    console.error('Token refresh failed:', err);
+    return false;
+  }
+}
+
+function showLoginPanel() {
+  loginSection.style.display = 'block';
+  adminSection.style.display = 'none';
+}
+
+async function updateOrder(id) {
+  if (!accessToken) {
+    loginMessage.textContent = 'Please login first.';
+    return;
+  }
+
+  const container = [...document.getElementsByClassName('order-card')].find(card => card.innerHTML.includes(id));
+  if (!container) return;
+
+  const tableInput = container.querySelector(`.table-input[data-order-id='${id}']`);
+  const statusSelect = container.querySelector(`.status-select[data-order-id='${id}']`);
+
+  const body = {};
+  if (tableInput && tableInput.value) body.tableNumber = Number(tableInput.value);
+  if (statusSelect) body.status = statusSelect.value;
+
+  try {
+    let res = await fetch(`${API_URL}/api/orders/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`
+      },
+      body: JSON.stringify(body)
+    });
+
+    // Handle token expiration
+    if (res.status === 403) {
+      const refreshed = await refreshAccessToken();
+      if (!refreshed) {
+        logout();
+        return;
+      }
+      // Retry with new token
+      res = await fetch(`${API_URL}/api/orders/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`
+        },
+        body: JSON.stringify(body)
+      });
+    }
+
+    if (res.ok) {
+      loadOrders();
+    } else {
+      const error = await res.json();
+      alert('Failed to update order: ' + (error.message || 'Unknown error'));
+    }
+  } catch (err) {
+    alert('Error updating order: ' + err.message);
+  }
+}
+
+// Auto-refresh orders every 5 seconds when logged in
+setInterval(() => {
+  if (accessToken) loadOrders();
+}, 5000);
+</script>
+
+</body>
+</html>
