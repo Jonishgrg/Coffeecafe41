@@ -1,83 +1,72 @@
 const express = require("express");
 const cors = require("cors");
+const fs = require("fs");
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
+const DATA_FILE = "orders.json";
 
 app.use(cors());
 app.use(express.json());
 
+// Load existing orders from file on startup
 let orders = [];
+if (fs.existsSync(DATA_FILE)) {
+    try {
+        orders = JSON.parse(fs.readFileSync(DATA_FILE));
+    } catch (e) {
+        orders = [];
+    }
+}
 
-// 1. Handle New Orders from Customers
+// Save function
+const saveToFile = () => {
+    fs.writeFileSync(DATA_FILE, JSON.stringify(orders, null, 2));
+};
+
+// 1. Customer places order
 app.post("/orders", (req, res) => {
     const order = {
         ...req.body,
-        id: Date.now(), // Unique ID for tracking
-        time: new Date().toLocaleString(),
+        id: Date.now(),
+        time: new Date().toLocaleTimeString(),
         status: "Pending"
     };
     orders.push(order);
-    
-    console.log("🔔 NEW ORDER RECEIVED:", order.name, "-", order.total);
-
-    // We MUST return the ID so the frontend knows which order to track
-    res.json({ 
-        success: true, 
-        message: "Order received!", 
-        id: order.id 
-    });
+    saveToFile();
+    res.json({ success: true, id: order.id });
 });
 
-// 2. Admin Login Route
+// 2. Admin Login
 app.post("/admin/login", (req, res) => {
     const { username, password } = req.body;
-    // Hardcoded credentials
     if (username === "admin" && password === "coffee123") {
-        res.json({ success: true, token: "secret-session-key" });
+        res.json({ success: true });
     } else {
-        res.status(401).json({ success: false, message: "Invalid credentials" });
+        res.status(401).json({ success: false });
     }
 });
 
-// 3. Get Orders for Admin Panel
+// 3. Admin gets all orders
 app.get("/admin/orders", (req, res) => {
-    // Returns orders newest-first for the admin
     res.json([...orders].reverse());
 });
 
-// 4. Update Order Status (From Admin Panel)
+// 4. Admin updates status
 app.patch("/admin/orders/:id", (req, res) => {
-    const { id } = req.params;
-    const { status } = req.body;
-
-    const order = orders.find(o => o.id == id);
-    if (order) {
-        order.status = status;
-        console.log(`✅ Order ${id} updated to: ${status}`);
-        res.json({ success: true, status: order.status });
-    } else {
-        res.status(404).json({ success: false, message: "Order not found" });
-    }
-});
-
-// 5. Route for Customer to check their specific order status
-app.get("/order-status/:id", (req, res) => {
     const order = orders.find(o => o.id == req.params.id);
     if (order) {
-        res.json({ status: order.status });
+        order.status = req.body.status;
+        saveToFile();
+        res.json({ success: true });
     } else {
-        res.status(404).json({ success: false, message: "Order not found" });
+        res.status(404).json({ success: false });
     }
 });
 
-// 6. Delete Order (Optional: To keep your list clean)
-app.delete("/admin/orders/:id", (req, res) => {
-    const { id } = req.params;
-    orders = orders.filter(o => o.id != id);
-    res.json({ success: true });
+// 5. Customer checks their specific status
+app.get("/order-status/:id", (req, res) => {
+    const order = orders.find(o => o.id == req.params.id);
+    res.json({ status: order ? order.status : "Not Found" });
 });
 
-app.listen(PORT, () => {
-    console.log(`🚀 Coffee Shop Server running at http://localhost:${PORT}`);
-    console.log(`Admin Login: admin / coffee123`);
-});
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

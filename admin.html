@@ -1,79 +1,84 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>CoffeeCafe Admin</title>
+    <meta charset="UTF-8">
+    <title>CoffeeCafe | Admin Dashboard</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
-        .order-card { background: white; padding: 15px; margin-bottom: 10px; border-radius: 8px; border-left: 5px solid #e67e22; }
-        #loginSection { max-width: 300px; margin: 100px auto; background: white; padding: 20px; border-radius: 8px; }
+        :root { --primary: #ff6b35; --dark: #292929; }
+        body { font-family: 'Segoe UI', sans-serif; background: #fdf2e9; padding: 20px; color: var(--dark); }
+        .container { max-width: 800px; margin: 0 auto; }
+        #loginSection { background: white; padding: 40px; border-radius: 15px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.1); margin-top: 100px; }
+        .order-card { background: white; padding: 20px; margin-bottom: 15px; border-radius: 12px; border-left: 6px solid var(--primary); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .hidden { display: none; }
+        input { width: 80%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; }
+        button { background: var(--primary); color: white; border: none; padding: 10px 25px; border-radius: 20px; cursor: pointer; font-weight: bold; }
+        select { padding: 8px; border-radius: 5px; border: 1px solid var(--primary); font-weight: bold; }
+        .status-badge { padding: 5px 10px; background: #eee; border-radius: 5px; font-size: 0.8em; margin-top: 5px; display: inline-block; }
     </style>
 </head>
 <body>
+    <div class="container">
+        <div id="loginSection">
+            <h2>Admin Login</h2>
+            <input type="text" id="user" placeholder="Username">
+            <input type="password" id="pass" placeholder="Password">
+            <br><br>
+            <button onclick="login()">Enter Dashboard</button>
+        </div>
 
-    <div id="loginSection">
-        <h2>Admin Login</h2>
-        <input type="text" id="user" placeholder="Username"><br><br>
-        <input type="password" id="pass" placeholder="Password"><br><br>
-        <button onclick="login()">Login</button>
-    </div>
-
-    <div id="adminDashboard" class="hidden">
-        <h2>Live Orders Dashboard</h2>
-        <div id="ordersList">No orders yet...</div>
+        <div id="adminDashboard" class="hidden">
+            <div style="display:flex; justify-content: space-between; align-items: center;">
+                <h2>Live Orders</h2>
+                <button onclick="location.reload()" style="background:#292929; font-size: 0.8em;">Refresh</button>
+            </div>
+            <hr>
+            <div id="ordersList">Waiting for orders...</div>
+        </div>
     </div>
 
     <script>
+        const API_URL = "http://localhost:3000"; // CHANGE THIS TO YOUR RENDER URL LATER
+
         async function login() {
-            const res = await fetch('http://localhost:3000/admin/login', {
+            const res = await fetch(`${API_URL}/admin/login`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({username: user.value, password: pass.value})
             });
-            const data = await res.json();
-            if(data.success) {
+            if(res.ok) {
                 document.getElementById('loginSection').classList.add('hidden');
                 document.getElementById('adminDashboard').classList.remove('hidden');
-                startOrderPolling(); // Start checking for orders
-            } else {
-                alert("Wrong login!");
-            }
+                fetchOrders();
+                setInterval(fetchOrders, 5000);
+            } else { alert("Access Denied"); }
         }
 
-        // Check for new orders every 5 seconds
-        function startOrderPolling() {
-            setInterval(async () => {
-                const res = await fetch('http://localhost:3000/admin/orders');
-                const orders = await res.json();
-                renderOrders(orders);
-            }, 5000);
+        async function fetchOrders() {
+            const res = await fetch(`${API_URL}/admin/orders`);
+            const orders = await res.json();
+            document.getElementById('ordersList').innerHTML = orders.map(o => `
+                <div class="order-card">
+                    <div>
+                        <strong>${o.name}</strong> <small>(${o.time})</small><br>
+                        <span style="font-size:0.9em">${o.items.map(i => i.name + ' x' + i.quantity).join(', ')}</span><br>
+                        <span class="status-badge">Current: ${o.status}</span>
+                    </div>
+                    <select onchange="updateStatus(${o.id}, this.value)">
+                        <option value="Pending" ${o.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                        <option value="On the Way" ${o.status === 'On the Way' ? 'selected' : ''}>On the Way</option>
+                        <option value="Ready to Pick Up" ${o.status === 'Ready to Pick Up' ? 'selected' : ''}>Ready to Pick Up</option>
+                    </select>
+                </div>
+            `).join('');
         }
 
-       function renderOrders(orders) {
-    const container = document.getElementById('ordersList');
-    container.innerHTML = orders.reverse().map(o => `
-        <div class="order-card" style="border-left-color: ${o.status === 'Ready' ? '#2ecc71' : '#e67e22'}">
-            <strong>Order from: ${o.name}</strong> (${o.time})<br>
-            Items: ${o.items.map(i => i.name + ' x' + i.quantity).join(', ')}<br>
-            <strong>Current Status: ${o.status}</strong><br><br>
-            
-            <select onchange="updateStatus(${o.id}, this.value)">
-                <option value="Pending" ${o.status === 'Pending' ? 'selected' : ''}>Pending</option>
-                <option value="On the Way" ${o.status === 'On the Way' ? 'selected' : ''}>On the Way</option>
-                <option value="Ready to Pick Up" ${o.status === 'Ready to Pick Up' ? 'selected' : ''}>Ready to Pick Up</option>
-            </select>
-        </div>
-    `).join('');
-}
-
-async function updateStatus(orderId, newStatus) {
-    await fetch(`http://localhost:3000/admin/orders/${orderId}`, {
-        method: 'PATCH',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ status: newStatus })
-    });
-    alert("Status Updated!");
-}
+        async function updateStatus(id, status) {
+            await fetch(`${API_URL}/admin/orders/${id}`, {
+                method: 'PATCH',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ status })
+            });
+        }
     </script>
 </body>
 </html>
