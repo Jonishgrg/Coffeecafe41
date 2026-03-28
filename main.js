@@ -1,3 +1,8 @@
+// API Base URL configuration
+const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+    ? 'http://localhost:3000'
+    : '/.netlify/functions'; // Netlify Functions
+
 // Menu Data
 const menuItems = [
     {
@@ -296,7 +301,7 @@ placeOrderBtn.addEventListener('click', async () => {
     };
 
     try {
-        const res = await fetch("http://localhost:3000/orders", {
+        const res = await fetch(`${API_BASE_URL}/orders`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(orderData)
@@ -342,7 +347,7 @@ function trackOrderStatus(id) {
     // Check the server every 10 seconds
     const checkStatus = setInterval(async () => {
         try {
-            const res = await fetch(`http://localhost:3000/order-status/${id}`);
+            const res = await fetch(`${API_BASE_URL}/order-status/${id}`);
             const data = await res.json();
             
             // If the status has changed to something the customer needs to know
@@ -429,23 +434,5 @@ mobileNavToggle.addEventListener('click', () => {
     }
 });
 
-window.addEventListener('click', (e) => e.target === cartModal && (cartModal.style.display = 'none'));
 
 initializeMenu();
-
-// NEW: Added tracking function at the bottom
-function trackOrderStatus(id) {
-    const checkStatus = setInterval(async () => {
-        try {
-            const res = await fetch(`http://localhost:3000/order-status/${id}`);
-            const data = await res.json();
-            
-            if (data.status === "Ready to Pick Up" || data.status === "On the Way") {
-                alert(`☕ Coffee Update: Your order is ${data.status.toUpperCase()}!`);
-                clearInterval(checkStatus); // Stop checking once it's ready
-            }
-        } catch (error) {
-            console.log("Error checking status:", error);
-        }
-    }, 10000); // Check every 10 seconds
-}

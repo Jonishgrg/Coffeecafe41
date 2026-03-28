@@ -3,77 +3,208 @@
 <head>
     <title>CoffeeCafe Admin</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
-        .order-card { background: white; padding: 15px; margin-bottom: 10px; border-radius: 8px; border-left: 5px solid #e67e22; }
-        #loginSection { max-width: 300px; margin: 100px auto; background: white; padding: 20px; border-radius: 8px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f5f5f5; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { background: #ff6b35; color: white; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
+        .header h1 { font-size: 28px; }
+        .header p { font-size: 14px; margin-top: 5px; opacity: 0.9; }
+        #loginSection { max-width: 400px; margin: 100px auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        #loginSection h2 { margin-bottom: 25px; color: #333; }
+        .form-group { margin-bottom: 15px; }
+        #loginSection input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
+        #loginSection button { width: 100%; padding: 12px; background: #ff6b35; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; margin-top: 10px; }
+        #loginSection button:hover { background: #e55a24; }
+        .error { color: #d32f2f; margin-top: 10px; padding: 10px; background: #ffebee; border-radius: 6px; }
+        #adminDashboard { display: none; }
+        #adminDashboard.active { display: block; }
+        .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .logout-btn { background: #d32f2f; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; }
+        .logout-btn:hover { background: #b71c1c; }
+        .orders-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
+        .order-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-left: 5px solid #e67e22; transition: all 0.3s; }
+        .order-card.new { animation: slideIn 0.5s ease-out; border-left-color: #4CAF50; background: #f1f8e9; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+        .order-id { font-size: 12px; color: #999; margin-bottom: 10px; }
+        .order-name { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 8px; }
+        .order-items { font-size: 13px; color: #666; margin: 10px 0; line-height: 1.5; }
+        .order-status { margin: 15px 0; font-weight: bold; }
+        .status-label { display: inline-block; padding: 5px 12px; border-radius: 20px; font-size: 12px; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-on-way { background: #cfe2ff; color: #084298; }
+        .status-ready { background: #d1e7dd; color: #0f5132; }
+        .order-card select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; cursor: pointer; margin-top: 10px; }
         .hidden { display: none; }
+        .notification { position: fixed; top: 20px; right: 20px; background: #4CAF50; color: white; padding: 15px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 1000; animation: slideInRight 0.3s ease-out; }
+        @keyframes slideInRight { from { opacity: 0; transform: translateX(100px); } to { opacity: 1; transform: translateX(0); } }
     </style>
 </head>
 <body>
 
     <div id="loginSection">
-        <h2>Admin Login</h2>
-        <input type="text" id="user" placeholder="Username"><br><br>
-        <input type="password" id="pass" placeholder="Password"><br><br>
+        <h2>🍰 CoffeeCafe Admin Login</h2>
+        <div class="form-group">
+            <input type="text" id="user" placeholder="Username" value="admin">
+        </div>
+        <div class="form-group">
+            <input type="password" id="pass" placeholder="Password" value="coffee123">
+        </div>
         <button onclick="login()">Login</button>
+        <div id="loginError" class="error hidden"></div>
     </div>
 
-    <div id="adminDashboard" class="hidden">
-        <h2>Live Orders Dashboard</h2>
-        <div id="ordersList">No orders yet...</div>
+    <div id="adminDashboard">
+        <div class="container">
+            <div class="header">
+                <h1>☕ Live Orders Dashboard</h1>
+                <p>Real-time order management and customer notifications</p>
+            </div>
+            
+            <div class="dashboard-header">
+                <h2>Active Orders</h2>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+            
+            <div class="orders-grid" id="ordersList">
+                <p>No orders yet... Waiting for customers to place orders!</p>
+            </div>
+        </div>
     </div>
 
     <script>
+        // API Configuration
+        const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:3000'
+            : '/.netlify/functions'; // Netlify Functions
+
+        let orderPollingInterval = null;
+        let lastOrderIds = [];
+
         async function login() {
-            const res = await fetch('http://localhost:3000/admin/login', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({username: user.value, password: pass.value})
-            });
-            const data = await res.json();
-            if(data.success) {
-                document.getElementById('loginSection').classList.add('hidden');
-                document.getElementById('adminDashboard').classList.remove('hidden');
-                startOrderPolling(); // Start checking for orders
-            } else {
-                alert("Wrong login!");
+            const username = document.getElementById('user').value;
+            const password = document.getElementById('pass').value;
+            const errorDiv = document.getElementById('loginError');
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/admin/login`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ username, password })
+                });
+
+                if (!res.ok) throw new Error('Network error');
+                const data = await res.json();
+
+                if (data.success) {
+                    errorDiv.classList.add('hidden');
+                    document.getElementById('loginSection').style.display = 'none';
+                    document.getElementById('adminDashboard').classList.add('active');
+                    startOrderPolling();
+                } else {
+                    errorDiv.classList.remove('hidden');
+                    errorDiv.textContent = 'Invalid username or password';
+                }
+            } catch (error) {
+                errorDiv.classList.remove('hidden');
+                errorDiv.textContent = `Connection error: ${error.message}. Is the backend running on ${API_BASE_URL}?`;
+                console.error('Login error:', error);
             }
         }
 
-        // Check for new orders every 5 seconds
-        function startOrderPolling() {
-            setInterval(async () => {
-                const res = await fetch('http://localhost:3000/admin/orders');
-                const orders = await res.json();
-                renderOrders(orders);
-            }, 5000);
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                clearInterval(orderPollingInterval);
+                document.getElementById('adminDashboard').classList.remove('active');
+                document.getElementById('loginSection').style.display = 'block';
+                lastOrderIds = [];
+            }
         }
 
-       function renderOrders(orders) {
-    const container = document.getElementById('ordersList');
-    container.innerHTML = orders.reverse().map(o => `
-        <div class="order-card" style="border-left-color: ${o.status === 'Ready' ? '#2ecc71' : '#e67e22'}">
-            <strong>Order from: ${o.name}</strong> (${o.time})<br>
-            Items: ${o.items.map(i => i.name + ' x' + i.quantity).join(', ')}<br>
-            <strong>Current Status: ${o.status}</strong><br><br>
-            
-            <select onchange="updateStatus(${o.id}, this.value)">
-                <option value="Pending" ${o.status === 'Pending' ? 'selected' : ''}>Pending</option>
-                <option value="On the Way" ${o.status === 'On the Way' ? 'selected' : ''}>On the Way</option>
-                <option value="Ready to Pick Up" ${o.status === 'Ready to Pick Up' ? 'selected' : ''}>Ready to Pick Up</option>
-            </select>
-        </div>
-    `).join('');
-}
+        function startOrderPolling() {
+            // Fetch immediately
+            fetchOrders();
 
-async function updateStatus(orderId, newStatus) {
-    await fetch(`http://localhost:3000/admin/orders/${orderId}`, {
-        method: 'PATCH',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ status: newStatus })
-    });
-    alert("Status Updated!");
-}
+            // Then fetch every 3 seconds
+            orderPollingInterval = setInterval(fetchOrders, 3000);
+        }
+
+        async function fetchOrders() {
+            try {
+                const res = await fetch(`${API_BASE_URL}/admin/orders`);
+                if (!res.ok) throw new Error('Failed to fetch orders');
+                const orders = await res.json();
+                renderOrders(orders);
+            } catch (error) {
+                console.error('Fetch orders error:', error);
+            }
+        }
+
+        function renderOrders(orders) {
+            const container = document.getElementById('ordersList');
+            
+            if (orders.length === 0) {
+                container.innerHTML = '<p>No orders yet... Waiting for customers to place orders!</p>';
+                return;
+            }
+
+            container.innerHTML = orders.map(o => {
+                const isNew = !lastOrderIds.includes(o.id);
+                const statusClass = o.status === 'Ready to Pick Up' ? 'status-ready' : 
+                                   o.status === 'On the Way' ? 'status-on-way' : 'status-pending';
+                
+                if (isNew) {
+                    lastOrderIds.push(o.id);
+                    showNotification(`New order from ${o.name}!`);
+                }
+
+                return `
+                    <div class="order-card ${isNew ? 'new' : ''}">
+                        <div class="order-id">Order ID: ${o.id}</div>
+                        <div class="order-name">${o.name}</div>
+                        <div class="order-items"><strong>Items:</strong><br>${o.items.map(i => `${i.name} × ${i.quantity}`).join('<br>')}</div>
+                        <div><strong>Total:</strong> ${o.total}</div>
+                        <div><strong>Phone:</strong> ${o.phone}</div>
+                        <div><strong>Time:</strong> ${o.time}</div>
+                        <div class="order-status">
+                            <span class="status-label ${statusClass}">${o.status}</span>
+                        </div>
+                        <select onchange="updateStatus(${o.id}, this.value)">
+                            <option value="Pending" ${o.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                            <option value="On the Way" ${o.status === 'On the Way' ? 'selected' : ''}>On the Way</option>
+                            <option value="Ready to Pick Up" ${o.status === 'Ready to Pick Up' ? 'selected' : ''}>Ready to Pick Up</option>
+                        </select>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 4000);
+        }
+
+        async function updateStatus(orderId, newStatus) {
+            try {
+                const res = await fetch(`${API_BASE_URL}/admin/orders/${orderId}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: newStatus })
+                });
+
+                if (res.ok) {
+                    showNotification(`Order updated to: ${newStatus}`);
+                    fetchOrders(); // Refresh orders
+                } else {
+                    alert('Failed to update status');
+                }
+            } catch (error) {
+                console.error('Update error:', error);
+                alert('Error updating status: ' + error.message);
+            }
+        }
     </script>
 </body>
 </html>

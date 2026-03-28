@@ -1,0 +1,9 @@
+[build]
+  command = "echo 'Ready to deploy!'"
+  publish = "."
+  functions = "netlify/functions"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

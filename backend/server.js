@@ -1,9 +1,31 @@
 const express = require("express");
 const cors = require("cors");
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+// CORS configuration for both localhost and Netlify
+const allowedOrigins = [
+    'http://localhost:3000',
+    'http://localhost:8000',
+    'http://localhost:8080',
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:8000',
+    'http://127.0.0.1:8080',
+    'https://coffeecafee49.netlify.app',
+    'https://coffeecafe-backend.netlify.app'
+];
+
+app.use(cors({
+    origin: function(origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('CORS not allowed'));
+        }
+    },
+    credentials: true
+}));
+
 app.use(express.json());
 
 let orders = [];
